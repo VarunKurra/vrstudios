@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building Cinematic Websites with Claude — The Complete Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14121a;
+    --panel: #1b1822;
+    --panel-border: #2c2733;
+    --text: #ece7e2;
+    --text-dim: #a79fb0;
+    --text-dimmer: #6d6579;
+    --cyan: #dba463;
+    --violet: #7fbfa0;
+    --gradient: linear-gradient(90deg, var(--cyan), var(--violet));
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  ::selection { background: var(--violet); color: #0b0d12; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 42px);
+    overflow-y: auto;
+    border-right: 1px solid var(--panel-border);
+    padding: 32px 20px;
+    background: var(--panel);
+  }
+
+  .brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+
+  .brand-vr {
+    color: #d8d2e0;
+  }
+
+  .brand-accent {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .sidebar-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dimmer);
+    margin-bottom: 28px;
+  }
+
+  .nav-group-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dimmer);
+    margin: 20px 0 8px;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    color: var(--text-dim);
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .nav-link:hover {
+    background: rgba(76, 217, 224, 0.08);
+    color: var(--text);
+  }
+
+  .nav-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    width: 20px;
+    flex-shrink: 0;
+  }
+
+  /* Main */
+  .main {
+    padding: 0 0 120px;
+  }
+
+  .hero {
+    padding: 90px 64px 70px;
+    border-bottom: 1px solid var(--panel-border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Cursor-reactive ambient glow, fixed to viewport, follows cursor across the whole page */
+  #cursor-glow {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    mix-blend-mode: screen;
+    transition: opacity 0.7s ease;
+    background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(219,164,99,0.13), transparent 38%);
+  }
+
+  /* Custom ring cursor */
+  #cursor-ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 26px;
+    height: 26px;
+    margin: -13px 0 0 -13px;
+    border: 1.5px solid rgba(255,255,255,0.85);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    opacity: 0;
+    transition: opacity 0.25s ease, width 0.2s ease, height 0.2s ease, margin 0.2s ease;
+  }
+
+  #cursor-ring.visible { opacity: 1; }
+  #cursor-ring.active {
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border-color: rgba(219,164,99,0.9);
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--cyan);
+    letter-spacing: 0.08em;
+    margin-bottom: 18px;
+    display: inline-block;
+  }
+
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1.08;
+    margin: 0 0 22px;
+    max-width: 760px;
+    position: relative;
+  }
+
+  .hero h1 .grad {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero p.lede {
+    font-size: 17px;
+    color: var(--text-dim);
+    max-width: 620px;
+    position: relative;
+  }
+
+  .stack-pills {
+    display: flex;
+    gap: 10px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 7px 14px;
+    border: 1px solid var(--panel-border);
+    border-radius: 100px;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.02);
+  }
+
+  /* Content sections shared */
+  .content-block {
+    padding: 56px 64px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+
+  .content-block h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    margin: 0 0 16px;
+  }
+
+  .content-block > p {
+    color: var(--text-dim);
+    max-width: 680px;
+    font-size: 15.5px;
+  }
+
+  /* Getting started specifics */
+  .gs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 28px;
+  }
+
+  .gs-card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 24px;
+  }
+
+  .gs-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    margin: 0 0 12px;
+    color: var(--cyan);
+  }
+
+  .gs-card ol {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  .gs-card li { margin-bottom: 8px; }
+
+  .gs-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(76,217,224,0.1);
+    color: var(--cyan);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12.5px;
+  }
+
+  /* Effect sections */
+  .effect-section {
+    padding: 64px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+
+  .effect-section:nth-child(even) {
+    background: rgba(255,255,255,0.012);
+  }
+
+  .terminal-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--cyan);
+    margin-bottom: 14px;
+  }
+
+  .section-head h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 30px;
+    margin: 0 0 14px;
+    max-width: 640px;
+  }
+
+  .section-intro {
+    color: var(--text-dim);
+    font-size: 15.5px;
+    max-width: 640px;
+    margin: 0 0 40px;
+  }
+
+  .block { margin-bottom: 36px; }
+
+  .block-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dimmer);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .resource {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-left: 2px solid var(--cyan);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+
+  .resource-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .resource-desc {
+    font-size: 13.5px;
+    color: var(--text-dim);
+    line-height: 1.55;
+  }
+
+  .resource-install {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--violet);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--panel-border);
+  }
+
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: none;
+  }
+
+  .steps li {
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--panel-border);
+    align-items: flex-start;
+  }
+
+  .steps li:last-child { border-bottom: none; }
+
+  .step-marker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--violet);
+    flex-shrink: 0;
+    padding-top: 1px;
+  }
+
+  .step-text {
+    font-size: 14.5px;
+    color: var(--text-dim);
+  }
+
+  .terminal-window {
+    background: #0e1015;
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #15181f;
+    border-bottom: 1px solid var(--panel-border);
+  }
+
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .dot.red { background: #ff5f57; }
+  .dot.yellow { background: #febc2e; }
+  .dot.green { background: #28c840; }
+
+  .terminal-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text-dimmer);
+    margin-left: 8px;
+  }
+
+  .terminal-body {
+    padding: 20px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    color: #cfe6d8;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  /* Build order */
+  .order-block {
+    padding: 64px;
+  }
+
+  .order-block h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    margin: 0 0 8px;
+  }
+
+  .order-block > p {
+    color: var(--text-dim);
+    max-width: 640px;
+    margin-bottom: 28px;
+  }
+
+  .order-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 720px;
+  }
+
+  .order-list li {
+    display: flex;
+    gap: 18px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--panel-border);
+  }
+
+  .order-list .step-marker { color: var(--cyan); }
+  .order-list .step-text { color: var(--text-dim); font-size: 14.5px; }
+
+  .footer-note {
+    padding: 40px 64px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dimmer);
+  }
+
+  .footer-note .grad {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .hero, .content-block, .effect-section, .order-block { padding: 40px 24px; }
+    .hero h1 { font-size: 34px; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .gs-grid { grid-template-columns: 1fr; }
+  }
+  .top-note {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(127,191,160,0.08);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--panel-border);
+    padding: 12px 64px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    text-align: center;
+    display: block;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .top-note:hover {
+    background: rgba(127,191,160,0.14);
+  }
+
+  .top-note strong {
+    color: var(--violet);
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    .top-note { padding: 12px 20px; }
+  }
+</style>
+</head>
+<body>
+<a class="top-note" href="https://www.instagram.com/vrstudios.dev/" target="_blank" rel="noopener noreferrer">📩 DM <strong>@VRStudios</strong> for a cheap custom website</a>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="brand"><span class="brand-vr">VR</span><span class="brand-accent">Studios</span></div>
+    <div class="sidebar-sub">// prompt guide v1</div>
+
+    <div class="nav-group-label">Start here</div>
+    <a href="#getting-started" class="nav-link"><span class="nav-num">00</span>Getting Started</a>
+
+    <div class="nav-group-label">Effects</div>
+    <a href="#hero-video" class="nav-link"><span class="nav-num">01</span>Hero Scroll-Pinned Video</a>
+<a href="#cursor" class="nav-link"><span class="nav-num">02</span>Cursor-Based Animations</a>
+<a href="#scroll-reveal" class="nav-link"><span class="nav-num">03</span>Scroll-Triggered Reveals</a>
+<a href="#horizontal-scroll" class="nav-link"><span class="nav-num">04</span>Horizontal Scroll / Scrollytelling</a>
+<a href="#3d-tilt-cards" class="nav-link"><span class="nav-num">05</span>3D Tilt &amp; Parallax Cards</a>
+<a href="#webgl-bg" class="nav-link"><span class="nav-num">06</span>WebGL Background (Three.js / Shaders)</a>
+<a href="#mouse-parallax" class="nav-link"><span class="nav-num">07</span>Mouse Parallax</a>
+<a href="#interactive-masking" class="nav-link"><span class="nav-num">08</span>Interactive Masking</a>
+<a href="#text-scramble" class="nav-link"><span class="nav-num">09</span>Text Scramble / Split-Text Reveals</a>
+<a href="#hover-distortion" class="nav-link"><span class="nav-num">10</span>Hover Distortion Effects</a>
+
+    <div class="nav-group-label">Reference</div>
+    <a href="#build-order" class="nav-link"><span class="nav-num">→</span>Build Order</a>
+  </nav>
+
+  <main class="main">
+
+    <header class="hero">
+      <span class="eyebrow">// full prompt & resource guide</span>
+      <h1>Building <span class="grad">cinematic</span> websites with Claude</h1>
+      <p class="lede">Everything used to build the kind of site that makes people stop scrolling: the stack, the exact resources for each effect, the build order, and the prompts to actually get Claude to build it.</p>
+      <div class="stack-pills">
+        <span class="pill">Expo</span>
+        <span class="pill">Claude Code</span>
+        <span class="pill">GSAP</span>
+        <span class="pill">Three.js</span>
+        <span class="pill">Framer Motion</span>
+      </div>
+    </header>
+
+    <section class="content-block" id="getting-started">
+      <span class="terminal-tag">~/setup $</span>
+      <h2>Getting Started: Expo + Claude Code</h2>
+      <p>Expo Router renders standard React to the web when you run it in web mode, which means every library in this guide, GSAP, Framer Motion, React Three Fiber, works exactly the way it would in any other React project. The routing is just file-based instead of manually configured.</p>
+
+      <div class="gs-grid">
+        <div class="gs-card">
+          <h3>Project setup</h3>
+          <ol>
+            <li>Install the CLI: <code>npx create-expo-app@latest</code></li>
+            <li>Choose the blank TypeScript template for the cleanest starting point</li>
+            <li>Run it in web mode: <code>npx expo start --web</code></li>
+            <li>Docs if you get stuck: <code>docs.expo.dev</code></li>
+            <li>Install your animation libraries as normal npm packages, nothing Expo-specific needed for any of them</li>
+          </ol>
+        </div>
+        <div class="gs-card">
+          <h3>Claude Code setup</h3>
+          <ol>
+            <li>Install Claude Code: <code>npm install -g @anthropic-ai/claude-code</code></li>
+            <li>Run <code>claude</code> from inside your project root</li>
+            <li>Docs if you get stuck: <code>docs.claude.com/claude-code</code></li>
+            <li>Give it context first: what the site is, who it's for, what effect you're building toward before asking for code</li>
+            <li>Build one effect at a time, in the order laid out at the bottom of this guide, don't ask for everything in a single prompt</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    
+    <section class="effect-section" id="hero-video">
+      <div class="section-head">
+        <div class="terminal-tag">~/build/01-hero-scroll $</div>
+        <h2>Hero Scroll-Pinned Video</h2>
+        <p class="section-intro">The hero video is the first three seconds of trust. It should feel cinematic, pin in place while the page scrolls past it, and scrub or fade with scroll position instead of just autoplaying in the background.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Resources</div>
+        <div class="resource-grid">
+        <div class="resource">
+          <div class="resource-name">Higgsfield</div>
+          <div class="resource-desc">AI video generation built specifically for cinematic camera moves (dolly, pan, orbit). Best option right now for a hero clip that needs to feel directed, not generated.</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Claude + MCP video tools</div>
+          <div class="resource-desc">If you have an MCP video-capable connector enabled in Claude Code, you can generate, trim, and re-export hero footage directly inside your build session instead of round-tripping through a separate app.</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Google Flow</div>
+          <div class="resource-desc">Google's AI filmmaking tool. Strong at longer, more controllable camera paths, useful when a clip's length is too short for your pin distance.</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Adobe Firefly Video</div>
+          <div class="resource-desc">Free tier caps out around 2 generations, but the output quality is solid enough to use as your final hero clip if you nail the prompt on the first couple tries.</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">GSAP + ScrollTrigger</div>
+          <div class="resource-desc">Pins the section and scrubs playback or opacity against scroll position.</div><div class="resource-install">npm install gsap</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Lenis</div>
+          <div class="resource-desc">Optional, but pairs well here if you want the scrub itself to feel eased rather than tied 1:1 to raw scroll.</div><div class="resource-install">npm install lenis</div>
+        </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">How to build it</div>
+        <ol class="steps">
+        <li><span class="step-marker">01</span><span class="step-text">Generate or source your hero video (see resources above). Export at the resolution you'll actually display, don't ship a 4K file for a 1200px-wide hero.</span></li>
+        <li><span class="step-marker">02</span><span class="step-text">Compress it. Run it through ffmpeg or Handbrake to get file size down, a hero video over 5-8MB will hurt your load time badly.</span></li>
+        <li><span class="step-marker">03</span><span class="step-text">Wrap the hero in a tall container (e.g. 250-300vh) with the video itself set to position: sticky or fixed inside it, this is what creates the 'pin' feeling.</span></li>
+        <li><span class="step-marker">04</span><span class="step-text">Install GSAP and ScrollTrigger, then scrub the video's currentTime (or a CSS scale/opacity value) against the ScrollTrigger progress so the video responds to scroll instead of just playing on its own.</span></li>
+        <li><span class="step-marker">05</span><span class="step-text">Add a poster image and preload="auto" so the first paint isn't a blank box while the video buffers.</span></li>
+        <li><span class="step-marker">06</span><span class="step-text">Test specifically on mobile Safari, background video autoplay needs playsinline muted autoplay or iOS will simply refuse to play it.</span></li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Prompt it</div>
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="terminal-title">claude</span>
+          </div>
+          <div class="terminal-body">I want to build a scroll-pinned cinematic hero video for my landing page, similar to what you see on high-end agency and product sites, where the video feels locked to the viewport and responds to how far the user has scrolled rather than just playing on a loop in the background. I'm open to how you approach the actual mechanics, GSAP with ScrollTrigger is my default assumption since it's the most battle-tested option for scrubbing video playback or transform values against scroll progress, but if you think Framer Motion's useScroll and useTransform would produce a cleaner result given the rest of my component structure, use that instead. Feel free to layer in Lenis for the scroll physics if you think the pin will feel more premium eased rather than tracking raw scroll 1:1. I care about the following things being genuinely good, not just functional: the release from the pin into the next section should have zero visual jump, the video should have a real poster fallback and sensible preload behavior so there's no blank flash on first load, and it needs to actually autoplay correctly on mobile Safari, which has its own quirks around muted/playsinline video that trip a lot of implementations up. If there's a smarter or more modern approach than what I've described, for example using the native View Transitions API for part of this, or handling the scrub via a custom hook rather than raw ScrollTrigger callbacks, go with your best judgment rather than sticking rigidly to what I've outlined. Optimize for it feeling expensive and intentional over it being the simplest possible implementation.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="effect-section" id="cursor">
+      <div class="section-head">
+        <div class="terminal-tag">~/build/02-cursor-fx $</div>
+        <h2>Cursor-Based Animations</h2>
+        <p class="section-intro">A custom cursor that lags slightly behind the real one, and buttons that pull the cursor toward their center, this is one of the cheapest ways to make a site feel expensive.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Resources</div>
+        <div class="resource-grid">
+        <div class="resource">
+          <div class="resource-name">Framer Motion</div>
+          <div class="resource-desc">useMotionValue plus a spring gives you a cursor-follow element with almost no code.</div><div class="resource-install">npm install framer-motion</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">GSAP quickTo()</div>
+          <div class="resource-desc">Purpose-built for lerping a value toward a target every frame with minimal overhead.</div><div class="resource-install">npm install gsap</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Cursify</div>
+          <div class="resource-desc">An open-source library of prebuilt custom cursor effects if you want a starting point rather than building the lerp logic from scratch.</div><div class="resource-install">npm install cursify</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Rive</div>
+          <div class="resource-desc">Overkill for a simple follow-cursor, but excellent if you want the cursor itself to be a small animated vector character that reacts to hover states.</div>
+        </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">How to build it</div>
+        <ol class="steps">
+        <li><span class="step-marker">01</span><span class="step-text">Render a single fixed-position div as your custom cursor, hide the real OS cursor with cursor: none on desktop only.</span></li>
+        <li><span class="step-marker">02</span><span class="step-text">Track mousemove coordinates in a ref, don't trigger a React re-render on every mousemove, update the DOM element directly for performance.</span></li>
+        <li><span class="step-marker">03</span><span class="step-text">Use GSAP's quickTo() or a Framer Motion spring to ease the custom cursor's position toward the real cursor's coordinates, this lag is what makes it feel intentional instead of glitchy.</span></li>
+        <li><span class="step-marker">04</span><span class="step-text">For magnetic buttons, calculate the distance from the cursor to the button's center on mousemove, and nudge the button toward the cursor when it's within range.</span></li>
+        <li><span class="step-marker">05</span><span class="step-text">Explicitly disable all of this on touch devices, check for a touch capable pointer and skip the custom cursor entirely rather than leaving a ghost cursor on mobile.</span></li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Prompt it</div>
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="terminal-title">claude</span>
+          </div>
+          <div class="terminal-body">I want a custom cursor system across my whole site, not just a single follow-the-mouse dot, but something that feels like a real piece of interface design: the base cursor should lag slightly behind the real pointer with its own easing personality, and it should be able to morph, resize, or change label depending on what it's hovering (bigger over images, showing a small 'view' or 'drag' label over specific elements, shrinking over text). I'd lean toward GSAP's quickTo for the core lerp since it tends to be the smoothest option for this kind of continuous per-frame update, but I'm open to Framer Motion springs if you think the rest of my animation stack makes that a better fit, and feel free to look at Cursify for inspiration or as a base if it saves meaningful time over hand-rolling everything. On top of the base follow behavior, add a magnetic pull on primary buttons and nav links, where the button itself (or its inner label) shifts toward the cursor within a reasonable proximity radius and springs back cleanly on mouse leave, use your judgment on the exact radius and pull strength rather than a fixed number, tune it until it feels good rather than mechanical. Make sure there's zero trace of any of this on touch devices, and think about whether the cursor should also respond to scroll velocity or drag states somewhere on the site, if there's a natural place for that kind of extra polish, add it.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="effect-section" id="scroll-reveal">
+      <div class="section-head">
+        <div class="terminal-tag">~/build/03-scroll-reveal $</div>
+        <h2>Scroll-Triggered Reveals</h2>
+        <p class="section-intro">Content that fades or slides in as it enters the viewport, done well this reads as polish, done with default easing on every single element it reads as a template.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Resources</div>
+        <div class="resource-grid">
+        <div class="resource">
+          <div class="resource-name">GSAP ScrollTrigger</div>
+          <div class="resource-desc">Full control over trigger points, scrub vs. one-shot, and stagger timing across grouped elements.</div><div class="resource-install">npm install gsap</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Framer Motion whileInView</div>
+          <div class="resource-desc">A couple lines per component, good default choice if you don't need scrubbing.</div><div class="resource-install">npm install framer-motion</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Intersection Observer (vanilla)</div>
+          <div class="resource-desc">Zero dependencies if you're not already using GSAP or Framer Motion elsewhere.</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">AOS (Animate On Scroll)</div>
+          <div class="resource-desc">A tiny, attribute-based library if you want reveals without writing any JS logic at all.</div><div class="resource-install">npm install aos</div>
+        </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">How to build it</div>
+        <ol class="steps">
+        <li><span class="step-marker">01</span><span class="step-text">Decide once, upfront, on a single easing curve and duration for every reveal on the site, consistency here matters more than any individual animation being clever.</span></li>
+        <li><span class="step-marker">02</span><span class="step-text">Group related elements (e.g. a row of 3 cards) and stagger their reveal by 60-100ms each, rather than animating them all at the exact same instant.</span></li>
+        <li><span class="step-marker">03</span><span class="step-text">Trigger the reveal when the element is about 15-20% into the viewport, not exactly at the very edge, this avoids a jarring 'just appeared' pop.</span></li>
+        <li><span class="step-marker">04</span><span class="step-text">Animate opacity and a small transform together, never just opacity alone, the subtle movement is what reads as intentional.</span></li>
+        <li><span class="step-marker">05</span><span class="step-text">Set will-change on elements right before they animate and remove it after, to keep scroll performance smooth on lower-end devices.</span></li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Prompt it</div>
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="terminal-title">claude</span>
+          </div>
+          <div class="terminal-body">Design a scroll reveal system for the whole site, not just a single one-off animation on one section, something consistent enough that every content block feels like it belongs to the same design language, but with enough variation that it doesn't feel mechanically identical everywhere. Use whichever combination of GSAP ScrollTrigger, Framer Motion's whileInView, or the raw Intersection Observer API makes the most sense given how the rest of the components are structured, and feel free to mix approaches if certain sections genuinely call for scrubbed animation (tied continuously to scroll position) while others are better as a one-shot reveal that fires once and stays. Think carefully about stagger timing for grouped elements like card grids or feature lists, sequential reveals almost always look better than everything appearing simultaneously, but don't default to a single generic fade-up for every element type, headlines, images, and body copy can each have a treatment suited to what they are. I want the timing, easing curves, and trigger thresholds to feel considered rather than left at library defaults, use your own judgment on the specifics rather than a fixed recipe, and prioritize this feeling refined over it being the fastest thing to implement.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="effect-section" id="horizontal-scroll">
+      <div class="section-head">
+        <div class="terminal-tag">~/build/04-horizontal-scroll $</div>
+        <h2>Horizontal Scroll / Scrollytelling</h2>
+        <p class="section-intro">A section that pins in place while normal vertical scrolling drives horizontal movement, common in portfolio and case-study sections where you want a gallery-like feel.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Resources</div>
+        <div class="resource-grid">
+        <div class="resource">
+          <div class="resource-name">GSAP ScrollTrigger (horizontal pin)</div>
+          <div class="resource-desc">The standard approach, pin the section and translateX its inner track based on scroll progress.</div><div class="resource-install">npm install gsap</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Locomotive Scroll</div>
+          <div class="resource-desc">Handles this natively with data attributes, a good option if you want horizontal scroll sections without hand-writing the pin math.</div><div class="resource-install">npm install locomotive-scroll</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Fullpage.js</div>
+          <div class="resource-desc">Built for full-section, slide-like navigation, better suited if your whole page is structured this way.</div><div class="resource-install">npm install fullpage.js</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">React Three Fiber</div>
+          <div class="resource-desc">Worth considering if the horizontal track should live in an actual 3D scene rather than a flat DOM row.</div><div class="resource-install">npm install three @react-three/fiber @react-three/drei</div>
+        </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">How to build it</div>
+        <ol class="steps">
+        <li><span class="step-marker">01</span><span class="step-text">Build the horizontal content as a single flex row wider than the viewport, don't rely on the browser's native horizontal scrollbar.</span></li>
+        <li><span class="step-marker">02</span><span class="step-text">Wrap that row in a pinned section sized to however much vertical scroll distance you want the horizontal movement to take.</span></li>
+        <li><span class="step-marker">03</span><span class="step-text">Use ScrollTrigger to translateX the track from 0 to -(track width - viewport width) as the user scrolls through the pin.</span></li>
+        <li><span class="step-marker">04</span><span class="step-text">Add horizontal-scroll-aware keyboard and trackpad support, decide whether direct left/right input should be honored or locked to vertical-drives-horizontal only.</span></li>
+        <li><span class="step-marker">05</span><span class="step-text">Test on mobile specifically, horizontal-pin sections are one of the most common places mobile scroll feels broken if not built carefully.</span></li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Prompt it</div>
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="terminal-title">claude</span>
+          </div>
+          <div class="terminal-body">Build a horizontal scrolling showcase section, the kind where normal vertical scrolling drives a row of project cards or case studies sliding across the screen while the section itself stays pinned. I'd default to GSAP ScrollTrigger for the pin and translate math since it gives the most precise control over exactly how far the track should travel relative to scroll distance, but I'm open to Locomotive Scroll or even a React Three Fiber based scene if you think a more spatial, actually-3D version of this would look more distinctive than a flat translated row, use your judgment on which approach fits the content best rather than defaulting to the simplest DOM version automatically. Whatever you build, make sure the pin distance is calculated from the actual content width rather than a guessed vh value, so there's no dead scroll space or abrupt cutoff at the end, and think about whether individual cards should have their own subtle secondary motion (a slight scale or parallax) as they cross the center of the viewport, rather than moving as one completely rigid block. I want this to feel like an actual directed sequence, not just a sideways scrollbar, so add whatever secondary polish you think earns its place, and make sure it degrades to a normal scrollable row on mobile rather than trying to force the pinned behavior on a touch device.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="effect-section" id="3d-tilt-cards">
+      <div class="section-head">
+        <div class="terminal-tag">~/build/05-tilt-cards $</div>
+        <h2>3D Tilt &amp; Parallax Cards</h2>
+        <p class="section-intro">Cards that subtly rotate in 3D space as the cursor moves across them, small effect, disproportionately large impact on how premium a site feels.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Resources</div>
+        <div class="resource-grid">
+        <div class="resource">
+          <div class="resource-name">react-parallax-tilt</div>
+          <div class="resource-desc">A drop-in React component for this exact effect.</div><div class="resource-install">npm install react-parallax-tilt</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">vanilla-tilt.js</div>
+          <div class="resource-desc">Framework-agnostic version of the same idea.</div><div class="resource-install">npm install vanilla-tilt</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Atropos</div>
+          <div class="resource-desc">A dedicated library for multi-layer tilt cards with parallax sub-elements built in, worth using instead of hand rolling if you want depth layers inside the card itself.</div><div class="resource-install">npm install atropos</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">React Three Fiber</div>
+          <div class="resource-desc">For when the card should be an actual 3D mesh rather than a flat element with a perspective transform.</div><div class="resource-install">npm install three @react-three/fiber @react-three/drei</div>
+        </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">How to build it</div>
+        <ol class="steps">
+        <li><span class="step-marker">01</span><span class="step-text">Track the cursor's position relative to the card's bounding box, so the tilt direction is relative to where on the card the cursor sits.</span></li>
+        <li><span class="step-marker">02</span><span class="step-text">Map that relative position to a rotateX/rotateY range, keep it modest, large rotation reads as gimmicky rather than premium.</span></li>
+        <li><span class="step-marker">03</span><span class="step-text">Add a perspective value on the parent container, without it the rotation will look flat instead of dimensional.</span></li>
+        <li><span class="step-marker">04</span><span class="step-text">Layer a subtle glare or highlight element that moves opposite the tilt direction, this sells the 3D illusion far more than the rotation alone.</span></li>
+        <li><span class="step-marker">05</span><span class="step-text">Reset smoothly to a flat resting state on mouse leave, don't snap it back instantly.</span></li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Prompt it</div>
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="terminal-title">claude</span>
+          </div>
+          <div class="terminal-body">Build a 3D tilt effect for my card grid that feels genuinely premium, not the fairly generic version of this effect you see on a lot of template sites where the whole card just rotates uniformly toward the cursor. I want actual depth inside each card, the image or thumbnail, the title, and any icon or badge should each shift by a slightly different amount as the card tilts, so it reads as multiple layers at different depths rather than one flat plane rotating. Consider Atropos if it gets you this layered result faster than hand-building it with Framer Motion or GSAP, but if you think a hand-rolled version using rotateX/rotateY plus a couple of transform-translated child layers will look better or integrate more cleanly with the rest of my component styling, go that route instead. A moving highlight or glare layer that shifts opposite the tilt direction is something I definitely want, since it's what actually sells the illusion of a real light source, but use your own judgment on its opacity, size, and blend mode rather than a fixed spec. I care about the easing on entry and especially on mouse leave, it should settle back to resting state smoothly, not snap, and I'd rather you take the time to get the physics feeling right than ship the most minimal version that technically works.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="effect-section" id="webgl-bg">
+      <div class="section-head">
+        <div class="terminal-tag">~/build/06-webgl-bg $</div>
+        <h2>WebGL Background (Three.js / Shaders)</h2>
+        <p class="section-intro">An ambient, slowly moving particle field or shader gradient behind your hero or footer, this is the effect that makes a site feel like it was built by people who actually do this for a living.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Resources</div>
+        <div class="resource-grid">
+        <div class="resource">
+          <div class="resource-name">Three.js</div>
+          <div class="resource-desc">The underlying library most of the WebGL ecosystem is built on top of.</div><div class="resource-install">npm install three</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">React Three Fiber + drei</div>
+          <div class="resource-desc">The React-idiomatic way to use Three.js, drei adds a huge set of prebuilt helpers on top.</div><div class="resource-install">npm install @react-three/fiber @react-three/drei</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Shadergradient</div>
+          <div class="resource-desc">A no-code / low-code way to get an animated shader gradient background without writing GLSL yourself.</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">OGL</div>
+          <div class="resource-desc">A much lighter alternative to Three.js if your effect is simple and you care about bundle size.</div><div class="resource-install">npm install ogl</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Pixi.js</div>
+          <div class="resource-desc">A 2D-focused WebGL renderer, sometimes a better fit than Three.js if the background is closer to layered particle/sprite work than a true 3D scene.</div><div class="resource-install">npm install pixi.js</div>
+        </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">How to build it</div>
+        <ol class="steps">
+        <li><span class="step-marker">01</span><span class="step-text">Decide what the background is actually representing, a WebGL background with no conceptual tie to the brand reads as decoration, not design.</span></li>
+        <li><span class="step-marker">02</span><span class="step-text">Keep the geometry count and shader complexity reasonable, this runs on every visitor's device, not just yours, test on a mid-range phone.</span></li>
+        <li><span class="step-marker">03</span><span class="step-text">Render it behind your content using a fixed position canvas with pointer-events disabled so it never blocks clicks on the real UI.</span></li>
+        <li><span class="step-marker">04</span><span class="step-text">Tie a couple of shader uniforms to scroll position or mouse position so it feels alive rather than a looping video.</span></li>
+        <li><span class="step-marker">05</span><span class="step-text">Add a static image or CSS gradient fallback for devices that fail WebGL context creation.</span></li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Prompt it</div>
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="terminal-title">claude</span>
+          </div>
+          <div class="terminal-body">I want an ambient WebGL background behind my hero section, something that feels alive and dimensional rather than a static image, but I want you to actually design what it represents rather than defaulting to a generic particle field. Think about what would tie back to the actual subject or brand of the site, an abstract shader gradient, a sparse field of drifting geometric shapes, a distorted wireframe mesh reacting to mouse position, or something else entirely if you have a better idea, and pick the direction you think looks the most distinctive rather than the most common WebGL demo effect. Use React Three Fiber with drei if you're building an actual 3D scene, or look at Shadergradient or a hand-written GLSL shader if a pure 2D shader effect would look cleaner and perform better, and consider OGL or Pixi.js instead of full Three.js if the scene ends up simple enough that a lighter renderer would be a smarter technical choice. Whatever you build, tie at least one or two of its properties (color, speed, distortion amount) to scroll position or cursor movement so it responds to the user rather than just looping passively, and make sure there's a real fallback, a static gradient or image, for devices where WebGL context creation fails, don't let the whole hero break in that case. Performance matters here more than in almost any other section, so keep an eye on draw calls and geometry count as you build rather than only checking it at the end.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="effect-section" id="mouse-parallax">
+      <div class="section-head">
+        <div class="terminal-tag">~/build/07-mouse-parallax $</div>
+        <h2>Mouse Parallax</h2>
+        <p class="section-intro">Multiple layers of content drifting at different speeds and directions as the cursor moves, creating real depth without needing a full 3D scene.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Resources</div>
+        <div class="resource-grid">
+        <div class="resource">
+          <div class="resource-name">Framer Motion</div>
+          <div class="resource-desc">useMotionValue and transform() mapping mouse position to several layers at different depth multipliers, the most common approach in a React stack.</div><div class="resource-install">npm install framer-motion</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">GSAP quickTo</div>
+          <div class="resource-desc">Cleanest option if you have many layers moving at once and want tight control over each one's easing independently.</div><div class="resource-install">npm install gsap</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Atropos</div>
+          <div class="resource-desc">A dedicated multi-layer parallax library if you want depth layers configured declaratively rather than wiring up transforms by hand.</div><div class="resource-install">npm install atropos</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">React Three Fiber</div>
+          <div class="resource-desc">Worth using for the deepest background layer specifically, so it can sit in real 3D space instead of a faked 2D offset.</div><div class="resource-install">npm install three @react-three/fiber @react-three/drei</div>
+        </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">How to build it</div>
+        <ol class="steps">
+        <li><span class="step-marker">01</span><span class="step-text">Decide how many depth layers you actually need, more layers rarely reads as more depth past a handful.</span></li>
+        <li><span class="step-marker">02</span><span class="step-text">Assign each layer a different multiplier for how far it moves relative to raw mouse delta, background layers should move less, foreground layers more.</span></li>
+        <li><span class="step-marker">03</span><span class="step-text">Normalize mouse position to a relative range based on the viewport or container center, rather than raw pixel coordinates, so behavior stays consistent across screen sizes.</span></li>
+        <li><span class="step-marker">04</span><span class="step-text">Ease each layer's movement independently rather than 1:1 to the cursor, slight lag per layer sells the depth illusion.</span></li>
+        <li><span class="step-marker">05</span><span class="step-text">Cap the maximum offset per layer so foreground elements never drift off-frame at extreme cursor positions, especially on ultrawide monitors.</span></li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Prompt it</div>
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="terminal-title">claude</span>
+          </div>
+          <div class="terminal-body">Build a mouse parallax system for my hero (or another section you think would benefit from it more) where multiple layered elements drift at different depths in response to cursor movement, background elements shifting subtly, closer elements shifting noticeably more, so the whole section reads as having real spatial depth rather than being a flat page with one thing following the mouse. I'd lean toward Framer Motion's motion values and transforms for this since it tends to compose well with layered React components, but use GSAP's quickTo instead if you think it'll give tighter, more independent control per layer, and consider Atropos if a purpose-built library produces a cleaner result than wiring up the transforms by hand. If it fits the content, explore putting the deepest background layer in an actual React Three Fiber scene rather than faking depth with 2D transforms, real 3D space for at least one layer often reads as more convincing than every layer being a flat div with a different multiplier. I want you to use your own judgment on how many layers to use, how far each should be allowed to travel, and what easing curve each layer gets, optimize for this feeling genuinely dimensional and premium rather than the simplest implementation that technically moves things on mousemove, and make sure it degrades sensibly on touch devices where there's no persistent cursor to track.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="effect-section" id="interactive-masking">
+      <div class="section-head">
+        <div class="terminal-tag">~/build/08-interactive-masking $</div>
+        <h2>Interactive Masking</h2>
+        <p class="section-intro">A shape or area that reveals what's underneath it, an image, a video, a color field, based on cursor position or scroll, like a spotlight the visitor drags around to uncover content.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Resources</div>
+        <div class="resource-grid">
+        <div class="resource">
+          <div class="resource-name">CSS clip-path + mix-blend-mode</div>
+          <div class="resource-desc">Native and dependency-free for simpler mask shapes, a great starting point before reaching for WebGL.</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">GSAP MorphSVG / DrawSVG</div>
+          <div class="resource-desc">For animating the mask shape itself, not just its position, part of GSAP's paid Club plugin set but genuinely worth it for this.</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Three.js custom shader mask</div>
+          <div class="resource-desc">The most control, a shader-driven mask that can respond to cursor position in real time with a soft, feathered edge.</div><div class="resource-install">npm install three</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Pixi.js</div>
+          <div class="resource-desc">A lighter-weight WebGL option than Three.js if the mask is a 2D compositing effect rather than a true 3D scene.</div><div class="resource-install">npm install pixi.js</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Rive</div>
+          <div class="resource-desc">Good option if you'd rather author the mask shape or its animation visually instead of hand-coding SVG paths.</div>
+        </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">How to build it</div>
+        <ol class="steps">
+        <li><span class="step-marker">01</span><span class="step-text">Decide whether the mask needs to be a simple CSS shape or a custom path, simple shapes don't need a library at all.</span></li>
+        <li><span class="step-marker">02</span><span class="step-text">If using clip-path, animate its radius or offset directly with GSAP or Framer Motion rather than relying on CSS transitions alone, for consistent easing control across the rest of the site.</span></li>
+        <li><span class="step-marker">03</span><span class="step-text">For text-as-mask (revealing a video or image only inside the shape of a headline), use mix-blend-mode or an SVG mask element, rather than trying to fake it with background-clip alone.</span></li>
+        <li><span class="step-marker">04</span><span class="step-text">Tie the mask's position or size to cursor coordinates for a spotlight-style reveal, or to scroll progress for a scroll-driven reveal, decide which fits the section before building.</span></li>
+        <li><span class="step-marker">05</span><span class="step-text">Profile performance specifically, WebGL-based masks can get expensive if the masked area is large and animating every frame.</span></li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Prompt it</div>
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="terminal-title">claude</span>
+          </div>
+          <div class="terminal-body">Add an interactive masking effect somewhere on the site where I think it'll have the most impact, a shape or region that reveals an image, video, or color field underneath it based on cursor position, like a spotlight or a window the visitor drags around to uncover content, rather than seeing the content plainly right away. I want you to decide whether this is best built with a CSS clip-path and mix-blend-mode approach, an SVG mask, or a full WebGL shader-driven mask using Three.js or Pixi.js, base that decision on how large the masked area is and how much visual richness the effect needs, not just on whichever is easiest to wire up. If GSAP's MorphSVG or DrawSVG plugins would let the mask shape itself morph or animate in a way that looks better than just repositioning a static shape, use them. I specifically don't want this to read as an obvious circle following the mouse, so think about a soft, feathered edge on the mask boundary, a bit of lag or easing rather than a perfectly rigid 1:1 follow, and whether a secondary smaller mask or subtle blend layer would add richness worth the extra complexity. Prioritize this feeling fluid, high-end, and a little surprising over it being the most literal or simplest interpretation of 'reveal on hover', and make sure there's a sensible fallback for touch devices where there's no persistent cursor position to drive it.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="effect-section" id="text-scramble">
+      <div class="section-head">
+        <div class="terminal-tag">~/build/09-text-fx $</div>
+        <h2>Text Scramble / Split-Text Reveals</h2>
+        <p class="section-intro">Headlines that reveal letter-by-letter, scramble into place, or split and stagger in on scroll. Used sparingly, on one or two key headlines, not every paragraph.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Resources</div>
+        <div class="resource-grid">
+        <div class="resource">
+          <div class="resource-name">SplitType</div>
+          <div class="resource-desc">Splits text into individual characters, words, or lines as separate DOM elements you can then animate.</div><div class="resource-install">npm install split-type</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Splitting.js</div>
+          <div class="resource-desc">A similar splitting utility with a slightly different API.</div><div class="resource-install">npm install splitting</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">GSAP ScrambleTextPlugin</div>
+          <div class="resource-desc">Purpose-built for the scramble-into-place effect specifically, part of GSAP's paid Club plugin set.</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Framer Motion staggered children</div>
+          <div class="resource-desc">Good enough for a simple word-by-word or line-by-line reveal without needing a separate splitting library.</div><div class="resource-install">npm install framer-motion</div>
+        </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">How to build it</div>
+        <ol class="steps">
+        <li><span class="step-marker">01</span><span class="step-text">Reserve this effect for headlines and key statements only, applying it to body copy or long paragraphs will slow down reading and feel gimmicky.</span></li>
+        <li><span class="step-marker">02</span><span class="step-text">Split the target text into the right unit (characters for scramble, words or lines for a stagger reveal).</span></li>
+        <li><span class="step-marker">03</span><span class="step-text">For a stagger reveal, animate opacity and a small translateY per unit, staggered apart for characters or slightly more apart for words.</span></li>
+        <li><span class="step-marker">04</span><span class="step-text">For a scramble effect, cycle each character through a few random characters before settling on the real one, keep the scramble duration short so it doesn't overstay its welcome.</span></li>
+        <li><span class="step-marker">05</span><span class="step-text">Make sure the text is still selectable and accessible to screen readers after splitting.</span></li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Prompt it</div>
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="terminal-title">claude</span>
+          </div>
+          <div class="terminal-body">Design a text reveal treatment for my key headlines, something more considered than a generic word-by-word fade, I want it to feel like a genuine signature moment on the page rather than a stock animation. Use SplitType or Splitting.js to break the text into the right unit, characters if you're going for a scramble-into-place effect, words or lines if it's more of a staggered reveal, and feel free to combine techniques across different headlines rather than applying the exact same treatment everywhere, for example a scramble on the hero headline using GSAP's ScrambleTextPlugin, paired with a simpler staggered word reveal on a secondary subheading using Framer Motion. I want you to make real decisions about timing and character set for any scramble effect (should it cycle through random letters, symbols, or something tied to the content itself), and about stagger delay and easing for any word or line based reveal, rather than reusing one fixed configuration everywhere. Whatever you build, make sure it's fast enough that it doesn't make the page feel slow to read, and double check that the underlying text remains fully accessible to screen readers and still selectable by the user after the DOM gets split apart.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="effect-section" id="hover-distortion">
+      <div class="section-head">
+        <div class="terminal-tag">~/build/10-hover-distortion $</div>
+        <h2>Hover Distortion Effects</h2>
+        <p class="section-intro">Images or thumbnails that ripple, warp, or displace slightly on hover, a signature move of high-end portfolio and agency sites.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Resources</div>
+        <div class="resource-grid">
+        <div class="resource">
+          <div class="resource-name">Curtains.js</div>
+          <div class="resource-desc">A WebGL library built specifically for image plane distortion driven by cursor position or a displacement map.</div><div class="resource-install">npm install curtainsjs</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Shery.js</div>
+          <div class="resource-desc">Purpose-built for this category of effect, ships with several hover-distortion and text-distortion presets out of the box.</div><div class="resource-install">npm install sheryjs</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">Three.js custom shader (displacement map)</div>
+          <div class="resource-desc">The most control, requires writing your own GLSL fragment shader, worth it if prebuilt libraries don't match your exact vision.</div><div class="resource-install">npm install three</div>
+        </div>
+        <div class="resource">
+          <div class="resource-name">hover-effect (Robin Delaporte)</div>
+          <div class="resource-desc">A smaller, focused library specifically for the classic image-to-image WebGL hover transition/distortion look.</div><div class="resource-install">npm install hover-effect</div>
+        </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">How to build it</div>
+        <ol class="steps">
+        <li><span class="step-marker">01</span><span class="step-text">Decide which images actually deserve this treatment, applying it to every thumbnail on a page will overwhelm rather than impress.</span></li>
+        <li><span class="step-marker">02</span><span class="step-text">Render the target image as a WebGL plane rather than a plain img tag.</span></li>
+        <li><span class="step-marker">03</span><span class="step-text">Feed cursor position into the shader as a uniform, and use it to drive a displacement or ripple amount localized around the cursor's position over the image.</span></li>
+        <li><span class="step-marker">04</span><span class="step-text">Tune the displacement strength and falloff radius, too strong and the image becomes unreadable mid-hover, too weak and the effect goes unnoticed.</span></li>
+        <li><span class="step-marker">05</span><span class="step-text">Provide a plain, undistorted image fallback for devices without hover capability.</span></li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Prompt it</div>
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="terminal-title">claude</span>
+          </div>
+          <div class="terminal-body">Add a hover distortion effect to the thumbnail images in my project or gallery grid, but rather than the very common circular ripple that just follows the cursor, I want you to actually design a distortion behavior that feels specific to this content, consider a directional displacement based on cursor velocity rather than just position, a chromatic aberration or RGB channel split on hover, or a subtle image-to-image crossfade transition using something like the hover-effect library if that reads as more premium for this particular grid. Use Curtains.js or Shery.js if a purpose built library gets you most of the way there, or write a custom Three.js shader with a displacement map if you want full control over exactly how the distortion looks and behaves. I want real thought put into the strength and falloff radius of whatever distortion you choose, too strong and the image becomes unreadable mid-interaction, too subtle and nobody notices it happened, so tune it until it feels right rather than shipping the first value that technically works. Make sure there's a plain, undistorted static image fallback for touch-only devices, since there's no hover state to trigger any of this there, and lean toward restraint, this effect should be reserved for a handful of images that deserve the attention, not applied uniformly across every thumbnail on the page.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="order-block" id="build-order">
+      <span class="terminal-tag">~/build/order $</span>
+      <h2>Build Order</h2>
+      <p>The order below isn't arbitrary, each layer depends on the one before it existing first. Building out of order is the most common reason these effects end up fighting each other.</p>
+      <ol class="order-list"><li><span class="step-marker">01</span><span class="step-text">Set up your Expo project and file-based routing skeleton first, every effect below assumes a working page structure to attach to.</span></li>
+<li><span class="step-marker">02</span><span class="step-text">Build the hero section and its scroll-pinned video next, it's the first thing every visitor sees and the highest-leverage section to get right early.</span></li>
+<li><span class="step-marker">03</span><span class="step-text">Add scroll-triggered reveals to your standard content sections once the hero is solid.</span></li>
+<li><span class="step-marker">04</span><span class="step-text">Layer in a horizontal scroll section only if your content actually calls for it, a gallery or case-study list, not just for the sake of having one.</span></li>
+<li><span class="step-marker">05</span><span class="step-text">Add 3D tilt cards and a WebGL background once your core layout is stable, these are visual polish layers, easier to place once the structure exists.</span></li>
+<li><span class="step-marker">06</span><span class="step-text">Add mouse parallax once you have real content layers to give depth to, it needs actual foreground/background elements to be worth building.</span></li>
+<li><span class="step-marker">07</span><span class="step-text">Add interactive masking to the one or two sections that most benefit from a reveal moment, don't spread it thin across the whole site.</span></li>
+<li><span class="step-marker">08</span><span class="step-text">Add cursor-based animations after the rest of the UI exists, it's a global overlay and easiest to tune once you can see it against real content.</span></li>
+<li><span class="step-marker">09</span><span class="step-text">Add text scramble or split-text reveals to your key headlines once you know which ones actually deserve the emphasis.</span></li>
+<li><span class="step-marker">10</span><span class="step-text">Add hover distortion to specific images last, once your gallery or portfolio grid is finalized, don't build it against placeholder content.</span></li>
+      </ol>
+    </section>
+
+    <div class="footer-note">
+      <span class="grad">VRStudios</span> — comment "GUIDE" to get this, DM to get a site built like the ones in it.
+    </div>
+
+  </main>
+</div>
+<script>
+(function() {
+  var isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  if (isCoarsePointer) return; // leave touch devices with their normal cursor
+
+  var glow = document.createElement('div');
+  glow.id = 'cursor-glow';
+  document.body.appendChild(glow);
+
+  var ring = document.createElement('div');
+  ring.id = 'cursor-ring';
+  document.body.appendChild(ring);
+
+  document.body.style.cursor = 'none';
+  var interactiveEls = 'a, button, .nav-link, .pill';
+
+  var mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+  var ringX = mouseX, ringY = mouseY;
+  var hasMoved = false;
+
+  document.addEventListener('mousemove', function(e) {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    glow.style.setProperty('--gx', mouseX + 'px');
+    glow.style.setProperty('--gy', mouseY + 'px');
+    glow.style.opacity = '1';
+    ring.classList.add('visible');
+    hasMoved = true;
+
+    var target = e.target.closest(interactiveEls);
+    ring.classList.toggle('active', !!target);
+  });
+
+  document.addEventListener('mouseleave', function() {
+    glow.style.opacity = '0';
+    ring.classList.remove('visible');
+  });
+
+  function tick() {
+    if (hasMoved) {
+      ringX += (mouseX - ringX) * 0.2;
+      ringY += (mouseY - ringY) * 0.2;
+      ring.style.transform = 'translate(' + ringX + 'px, ' + ringY + 'px)';
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
